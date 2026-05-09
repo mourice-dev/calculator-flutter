@@ -1,0 +1,18 @@
+# Node
+node_modules/
+npm-debug.log
+
+# Build artifacts
+xausd_app/build/
+*.apk
+*.aab
+*.ipa
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
