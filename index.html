@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="Professional XAUUSD Gold trading lot size calculator with risk management. Calculate lot sizes, risk exposure, and profit targets.">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>XAUUSD Lot Size Calculator</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-brand">
+        <div class="header-icon">⚜</div>
+        <div>
+          <h1>XAUUSD Calculator</h1>
+          <div class="header-subtitle">Gold Lot Size &amp; Risk</div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button id="btnInstall" class="btn-history" style="display: none; background: var(--blue-dim); color: var(--blue); border-color: rgba(68,138,255,0.2);">📲 Install</button>
+        <a href="history.html" class="btn-history" id="btnHistory">📋 History</a>
+      </div>
+    </header>
+
+    <!-- Mode Tabs -->
+    <div class="mode-tabs" id="modeTabs">
+      <button class="mode-tab active" data-mode="managed">Managed</button>
+      <button class="mode-tab" data-mode="unmanaged">Unmanaged</button>
+      <button class="mode-tab" data-mode="custom">Custom</button>
+    </div>
+
+    <!-- ═══ MANAGED MODE ═══ -->
+    <div class="mode-panel active" id="panel-managed">
+      <div class="input-section">
+        <div class="input-section-title">Trade Parameters</div>
+        <div class="input-group">
+          <div class="input-label">
+            <span>Account Balance</span>
+            <span class="unit">USD</span>
+          </div>
+          <input type="number" class="input-field" id="m-balance" placeholder="10000.00" min="0" step="0.01">
+        </div>
+        <div class="input-group">
+          <div class="input-label">
+            <span>Risk per Trade</span>
+            <span class="unit" id="m-risk-unit">USD</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="number" class="input-field" id="m-risk" placeholder="100.00" min="0" step="0.01" style="flex:1">
+            <button class="risk-toggle" id="m-risk-toggle" title="Toggle risk mode">%</button>
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="input-label">
+            <span>Stop Loss</span>
+            <span class="unit">PIPS</span>
+          </div>
+          <input type="number" class="input-field" id="m-sl" placeholder="13" min="0" step="0.1">
+        </div>
+        <div class="input-group">
+          <div class="input-label">
+            <span>Take Profit</span>
+            <span class="unit">PIPS</span>
+          </div>
+          <input type="number" class="input-field" id="m-tp" placeholder="39" min="0" step="0.1">
+        </div>
+      </div>
+      <button class="btn-calculate" id="btn-calc-managed">Calculate</button>
+    </div>
+
+    <!-- ═══ UNMANAGED MODE ═══ -->
+    <div class="mode-panel" id="panel-unmanaged">
+      <div class="input-section">
+        <div class="input-section-title">Trade Parameters</div>
+        <div class="input-group">
+          <div class="input-label">
+            <span>Number of Trades</span>
+            <span class="unit">1–10</span>
+          </div>
+          <div class="trade-count-row">
+            <div class="trade-count-btns">
+              <button class="trade-count-btn" id="u-minus">−</button>
+            </div>
+            <input type="number" class="input-field" id="u-count" value="1" min="1" max="10">
+            <div class="trade-count-btns">
+              <button class="trade-count-btn" id="u-plus">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="input-label">
+            <span>Risk per Trade</span>
+            <span class="unit">USD</span>
+          </div>
+          <input type="number" class="input-field" id="u-risk" placeholder="100.00" min="0" step="0.01">
+        </div>
+        <div class="input-group">
+          <div class="input-label">
+            <span>Stop Loss</span>
+            <span class="unit">PIPS</span>
+          </div>
+          <input type="number" class="input-field" id="u-sl" placeholder="13" min="0" step="0.1">
+        </div>
+        <div class="input-group">
+          <div class="input-label">
+            <span>Take Profit</span>
+            <span class="unit">PIPS</span>
+          </div>
+          <input type="number" class="input-field" id="u-tp" placeholder="39" min="0" step="0.1">
+        </div>
+      </div>
+      <button class="btn-calculate" id="btn-calc-unmanaged">Calculate</button>
+    </div>
+
+    <!-- ═══ CUSTOM MODE ═══ -->
+    <div class="mode-panel" id="panel-custom">
+      <div class="input-section">
+        <div class="input-section-title">Custom Trades</div>
+        <div class="custom-trades" id="customTrades">
+          <!-- Trade rows will be added here -->
+        </div>
+        <button class="btn-add-trade" id="btnAddTrade">+ Add Trade</button>
+      </div>
+      <button class="btn-calculate" id="btn-calc-custom">Calculate</button>
+    </div>
+
+    <!-- ═══ RESULTS ═══ -->
+    <div class="results" id="results">
+      <div class="results-header">
+        <h2>Trade Breakdown</h2>
+      </div>
+      <div id="tradeCards"></div>
+
+      <div class="portfolio-summary" id="portfolioSummary">
+        <div class="portfolio-title">📊 Portfolio Summary</div>
+        <div class="portfolio-grid">
+          <div class="portfolio-item">
+            <div class="portfolio-item-label">Total Lots</div>
+            <div class="portfolio-item-value lots" id="p-lots">—</div>
+          </div>
+          <div class="portfolio-item">
+            <div class="portfolio-item-label">Trades</div>
+            <div class="portfolio-item-value neutral" id="p-trades">—</div>
+          </div>
+          <div class="portfolio-item">
+            <div class="portfolio-item-label">Total Risked</div>
+            <div class="portfolio-item-value risk" id="p-risk">—</div>
+          </div>
+          <div class="portfolio-item">
+            <div class="portfolio-item-label">Total Reward</div>
+            <div class="portfolio-item-value reward" id="p-reward">—</div>
+          </div>
+          <div class="portfolio-net">
+            <div class="portfolio-item-label">Net Profit</div>
+            <div class="portfolio-item-value" id="p-net">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn-save" id="btnSave">💾 Save to History</button>
+        <button class="btn-reset" id="btnReset">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="js/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>
