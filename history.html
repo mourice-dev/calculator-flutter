@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="XAUUSD Calculator — Saved calculation history">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>History — XAUUSD Calculator</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-192.png" type="image/png">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="history-header">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <a href="index.html" class="btn-back">← Back</a>
+        <h1>History</h1>
+      </div>
+      <button class="btn-clear-all" id="btnClearAll">Clear All</button>
+    </header>
+    <div id="historyList"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+  (function() {
+    'use strict';
+
+    const historyList = document.getElementById('historyList');
+    const toast = document.getElementById('toast');
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    function fmt$(v) { return '$' + Number(v).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+    function fmtRR(v) { return '1 : ' + Number(v).toFixed(2); }
+
+    function formatDate(iso) {
+      const d = new Date(iso);
+      const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      const time = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      return `${date} · ${time}`;
+    }
+
+    function renderHistory() {
+      const history = JSON.parse(localStorage.getItem('xauusd_history') || '[]');
+
+      if (history.length === 0) {
+        historyList.innerHTML = `
+          <div class="history-empty">
+            <div class="history-empty-icon">📋</div>
+            <p>No saved calculations yet.</p>
+            <p style="margin-top:8px;font-size:0.8rem;color:#444;">Calculations you save will appear here.</p>
+          </div>
+        `;
+        return;
+      }
+
+      historyList.innerHTML = history.map((entry, idx) => {
+        const modeClass = entry.mode || 'managed';
+        const modeLabel = entry.mode ? entry.mode.charAt(0).toUpperCase() + entry.mode.slice(1) : 'Managed';
+
+        return `
+          <div class="history-entry" data-idx="${idx}">
+            <div class="history-entry-header">
+              <span class="history-entry-mode ${modeClass}">${modeLabel}</span>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span class="history-entry-date">${formatDate(entry.date)}</span>
+                <button class="btn-delete-entry" data-idx="${idx}" title="Delete this entry">🗑</button>
+              </div>
+            </div>
+            <div class="history-entry-grid">
+              <div class="history-entry-stat">
+                <div class="history-entry-stat-label">Lots</div>
+                <div class="history-entry-stat-value" style="color:var(--blue)">${Number(entry.totalLots).toFixed(2)}</div>
+              </div>
+              <div class="history-entry-stat">
+                <div class="history-entry-stat-label">Trades</div>
+                <div class="history-entry-stat-value">${entry.tradeCount}</div>
+              </div>
+              <div class="history-entry-stat">
+                <div class="history-entry-stat-label">R:R</div>
+                <div class="history-entry-stat-value" style="color:var(--gold)">${fmtRR(entry.rr)}</div>
+              </div>
+              <div class="history-entry-stat">
+                <div class="history-entry-stat-label">Risked</div>
+                <div class="history-entry-stat-value" style="color:var(--red)">${fmt$(entry.totalRisk)}</div>
+              </div>
+              <div class="history-entry-stat">
+                <div class="history-entry-stat-label">Gained</div>
+                <div class="history-entry-stat-value" style="color:var(--green)">${fmt$(entry.totalReward)}</div>
+              </div>
+              <div class="history-entry-stat">
+                <div class="history-entry-stat-label">Net</div>
+                <div class="history-entry-stat-value" style="color:${entry.netProfit >= 0 ? 'var(--green)' : 'var(--red)'}">${fmt$(entry.netProfit)}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    document.getElementById('btnClearAll').addEventListener('click', () => {
+      if (confirm('Clear all history? This cannot be undone.')) {
+        localStorage.removeItem('xauusd_history');
+        renderHistory();
+        showToast('History cleared');
+      }
+    });
+
+    historyList.addEventListener('click', (e) => {
+      const btn = e.target.closest('.btn-delete-entry');
+      if (!btn) return;
+      const idx = parseInt(btn.dataset.idx);
+      const history = JSON.parse(localStorage.getItem('xauusd_history') || '[]');
+      history.splice(idx, 1);
+      localStorage.setItem('xauusd_history', JSON.stringify(history));
+      renderHistory();
+      showToast('Entry deleted');
+    });
+
+    renderHistory();
+  })();
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>
