@@ -549,4 +549,13 @@
     if (btnInstall) btnInstall.style.display = 'none';
   });
 
+  // ── Keyboard shortcut: Enter to calculate ──
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    const tag = document.activeElement.tagName;
+    if (tag !== 'INPUT') return;
+    const calcBtn = $('btn-calc-' + currentMode);
+    if (calcBtn) calcBtn.click();
+  });
+
 })();
